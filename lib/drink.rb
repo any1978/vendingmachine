@@ -19,13 +19,13 @@ class Drink
     self.new(:cola,120)
   end
 
-  # def self.redbull
-  #   self.new(:redbull,200)
-  # end
+  def self.redbull
+    self.new(:redbull,200)
+  end
 
-  # def self.water
-  #   self.new(:water,100)
-  # end
+  def self.water
+    self.new(:water,100)
+  end
 
 end
 

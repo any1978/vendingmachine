@@ -5,19 +5,14 @@
 class Drink
   attr_reader :name,:price
 
-  # def initialize(attributes)
-  #   @name = attributes.fetch(:name,'nil')
-  #   @price = attributes.fetch(:price,'nil')
-  # end
-
   def initialize(name, price)
     @name = name
     @price = price
   end
 
-  def self.cola
-    self.new(:cola,120)
-  end
+  # def self.cola
+  #   self.new(:cola,120)
+  # end
 
   # def self.redbull
   #   self.new(:redbull,200)
@@ -30,21 +25,25 @@ class Drink
 end
 
 
-
 class VendingMachine
   AVAILABLE_MONEY = [10, 50, 100, 500, 1000].freeze
-
-  # これで投入合計額、売上金額をメソッドで呼び出せる。v1
-  attr_reader :total,:sale_amount, :drink_table
+ # これで投入合計額、売上金額をメソッドで呼び出せる。
+  attr_accessor :total, :sale_amount
+  # :drink_table
     
     #初期値
     def initialize
       @total = 0
       @sale_amount = 0
-      @drink_table = {name: :cola, price:120, stock:5}
-      # v1.drink_table[:stock]で確認できる
+      @drink_table = []
+      @drink_table << {name: :cola, price:120, stock:5}
+      # v1.drink_table[0][:stock]で確認できる
     end
   
+    def drink_table
+      @drink_table
+    end
+
     #お金を受け取る 繰り返し
     def insert(money)
       if VendingMachine::AVAILABLE_MONEY.include?(money)
@@ -64,36 +63,51 @@ class VendingMachine
       end
     end
 
+    # 在庫管理
+    def stock
+      unless @drink_table.has_key?(Drink.name)
+        @drink_table = { name: drink.name, price: drink.price, stock: 5 }
+      end
+      # @drink_table[drink.name][:stock] << drink.name
+      @stock
+    end
+      
+    #購入可能ドリンクの表示
+    def purchasable
+      @purchasable
+    end
 
+    #選んだドリンク以上のお金が入ってるか？
     def money_check
       @total >= drink_table[:price] 
     end
 
-    # 在庫管理
-    def stock
-      @stock = drink_table[:stock]
-    end
-    
-   
     def purchase
-      if money_check
-        # puts "購入できます"
+      #購入したいドリンクをドリンク名で選んでもらう。
+      #購入可能ドリンクの表示
+
+      if money_check && @stock
+        # total金額から購入する（選択した）ドリンクの料金を引く
         @total -= drink_table[:price]
+        # 選んだドリンクのストックを1本減らす
         @drink_table[:stock] -= 1
+        # 選んだドリンクの料金分売り上げが増える
         @sale_amount += drink_table[:price]
         # puts "残りは、#{@drink_table[:stock]}本です"
-        # @stock -= 1
       else
         puts "購入できません"
       end
     end
 
 
-    def sales_amount
-    end
-
-
   end
+
+
+
+
+
+
+
 
 
     #購入する　  #投入金額は商品金額以上か？ #お釣り&在庫確認！！
@@ -129,9 +143,9 @@ class VendingMachine
 
 
 # #     #ドリンクラインナップ
-# #     drink1 = Drink.new(name: "cola", price: 120)
-# #     drink2 = Drink.new(name: "water", price: 100)
-# #     menus = [drink1, drink2]
+    # drink1 = Drink.new(name: "cola", price: 120)
+    # drink2 = Drink.new(name: "water", price: 100)
+    # menus = [drink1, drink2]
 
 # #     def info
 # #       return "#{self.name} #{self.price}円 "
@@ -145,11 +159,6 @@ class VendingMachine
 # #     end
 
 
-
-#     #在庫ストック減少
-#     def decrease_drink_stock()       
-#       @drink_table[:cola][:stock] -= 1
-#     end
 
 
 
