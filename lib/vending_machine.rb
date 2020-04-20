@@ -1,8 +1,8 @@
-# require 'minitest/autorun'
+require 'minitest/autorun'
 
 # require "./lib/drink.rb"
 
-class Drink
+class Drink < VendingMachine
   attr_reader :name,:price
 
   def initialize(name, price)
@@ -10,17 +10,17 @@ class Drink
     @price = price
   end
 
-  # def self.cola
-  #   self.new(:cola,120)
-  # end
+  def self.cola
+    self.new(:cola,120)
+  end
 
-  # def self.redbull
-  #   self.new(:redbull,200)
-  # end
+  def self.redbull
+    self.new(:redbull,200)
+  end
 
-  # def self.water
-  #   self.new(:water,100)
-  # end
+  def self.water
+    self.new(:water,100)
+  end
 
 end
 
@@ -64,12 +64,13 @@ class VendingMachine
     end
 
     # 在庫管理
-    def stock
+    def drink_stock(name)
       unless @drink_table.has_key?(Drink.name)
-        @drink_table = { name: drink.name, price: drink.price, stock: 5 }
+        binding.irb
+        @drink_table << { name: drink.name, price: drink.price, stock: 5 }.to_h
       end
       # @drink_table[drink.name][:stock] << drink.name
-      @stock
+      @drink_table
     end
       
     #購入可能ドリンクの表示
@@ -86,7 +87,7 @@ class VendingMachine
       #購入したいドリンクをドリンク名で選んでもらう。
       #購入可能ドリンクの表示
 
-      if money_check && @stock
+      if money_check && stock
         # total金額から購入する（選択した）ドリンクの料金を引く
         @total -= drink_table[:price]
         # 選んだドリンクのストックを1本減らす
@@ -101,6 +102,10 @@ class VendingMachine
 
 
   end
+
+  v = VendingMachine.new
+  # d = Drink.new("water",100)
+  d = Drink.new(name, price)
 
 
 
@@ -158,12 +163,6 @@ class VendingMachine
 # #       index += 1
 # #     end
 
-
-
-
-
-
-  
 #     #購入する　  #投入金額は商品金額以上か？ #お釣り&在庫確認！！
 #     def purchase
 #       if stock_coin && drink_stock 
@@ -253,4 +252,3 @@ class VendingMachine
 #     # while next_purchase
 #     #   next_purchase = janken.pon(player.hand, enemy.hand)
 #     # end
-end
