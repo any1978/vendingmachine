@@ -2,7 +2,8 @@ require 'minitest/autorun'
 
 # require "./lib/drink.rb"
 
-class Drink < VendingMachine
+class Drink 
+  # < VendingMachine
   attr_reader :name,:price
 
   def initialize(name, price)
@@ -26,25 +27,23 @@ end
 
 
 class VendingMachine
+  # require_relative 'drink'
+
   AVAILABLE_MONEY = [10, 50, 100, 500, 1000].freeze
  # これで投入合計額、売上金額をメソッドで呼び出せる。
   attr_accessor :total, :sale_amount
   # :drink_table
     
-    #初期値
+    #[初期値]
     def initialize
       @total = 0
       @sale_amount = 0
-      @drink_table = []
-      @drink_table << {name: :cola, price:120, stock:5}
+      @drink_table = {}
+      5.times { drink_stock Drink.cola }
       # v1.drink_table[0][:stock]で確認できる
     end
   
-    def drink_table
-      @drink_table
-    end
-
-    #お金を受け取る 繰り返し
+    #[お金を受け取る] 
     def insert(money)
       if VendingMachine::AVAILABLE_MONEY.include?(money)
         @total += money
@@ -53,7 +52,7 @@ class VendingMachine
       end
     end
 
-    #払い戻し
+    #[払い戻し]
     def refund     
       if @total == 0
         puts "払い戻すお金はありません"
@@ -63,42 +62,72 @@ class VendingMachine
       end
     end
 
-    # 在庫管理
-    def drink_stock(name)
-      unless @drink_table.has_key?(Drink.name)
-        binding.irb
-        @drink_table << { name: drink.name, price: drink.price, stock: 5 }.to_h
-      end
-      # @drink_table[drink.name][:stock] << drink.name
+    def drink_table
       @drink_table
     end
-      
-    #購入可能ドリンクの表示
-    def purchasable
-      @purchasable
+
+    #[ドリンクストック情報]
+    #ハッシュにしたい。
+    def stock_info
+      @drink_table.map {|name, n| [name, { price: n[:price], stocks: n[:stocks].size }]}
     end
 
-    #選んだドリンク以上のお金が入ってるか？
-    def money_check
-      @total >= drink_table[:price] 
+
+    # [ドリンクを在庫に入れる]　#v1.drink_stock(Drink.cola) で確認！
+    def drink_stock(drink)
+      unless @drink_table.has_key?(drink.name)
+        @drink_table[drink.name] = { price: drink.price, stocks:[] }
+      end
+      @drink_table[drink.name][:stocks] << drink.name
+    end
+    
+    def purchasable_drink
+      @drink_table.select{|name, n| n[:price] <= total && n[:stocks].size >= 1 }.keys
     end
 
-    def purchase
-      #購入したいドリンクをドリンク名で選んでもらう。
-      #購入可能ドリンクの表示
+    #[引数に入れたドリンクは購入可能か？]　#購入可能ドリンクにそのドリンク名が含まれてるか確認
+    def purchasable?(drink_name)
+      purchasable_drink.include? drink_name
+    end
 
-      if money_check && stock
-        # total金額から購入する（選択した）ドリンクの料金を引く
-        @total -= drink_table[:price]
-        # 選んだドリンクのストックを1本減らす
-        @drink_table[:stock] -= 1
-        # 選んだドリンクの料金分売り上げが増える
-        @sale_amount += drink_table[:price]
-        # puts "残りは、#{@drink_table[:stock]}本です"
-      else
-        puts "購入できません"
+    #[ドリンク購入]
+    #@ドリンクテーブルの ドリンクネームのドリンクス情報の最後の部分取り出し、それをドリンクに代入する
+    #売り上げ金額、合計金額計算→ドリンクと払い戻しを戻り値にする
+    def purchase(drink_name)
+      if purchasable?(drink_name)
+        drink_price = @drink_table[drink_name][:price]
+        @sale_amount += drink_price
+        @total -= drink_price
+        @drink_table[drink_name][:stocks].delete_at(0)
+        [drink_name, refund]
       end
     end
+
+    #[売り上げ確認]
+    def sale_amount
+      @sale_amount
+    end
+
+end
+
+v1 = VendingMachine.new
+
+    # def purchase
+    #   #購入したいドリンクをドリンク名で選んでもらう。
+    #   #購入可能ドリンクの表示
+
+    #   if money_check && stock
+    #     # total金額から購入する（選択した）ドリンクの料金を引く
+    #     @total -= drink_table[:price]
+    #     # 選んだドリンクのストックを1本減らす
+    #     @drink_table[:stock] -= 1
+    #     # 選んだドリンクの料金分売り上げが増える
+    #     @sale_amount += drink_table[:price]
+    #     # puts "残りは、#{@drink_table[:stock]}本です"
+    #   else
+    #     puts "購入できません"
+    #   end
+    # end
 
 
   end
@@ -112,7 +141,20 @@ class VendingMachine
 
 
 
-
+    # def drink_stock(drink)
+    #   unless @drink_table.include?(Drink.name)
+    #     @drink_stock[drink.name] = drink_table.select { |x| x[:name].include?(drink.name) }
+    #   end
+    #   #   @drink_stock[drink.name] = { price: drink.price, drinks: [] } 
+    #   #   # @drink_table << { name: drink.name, price: drink.price, stock: 5 }.to_h
+    #   # end
+    #   # @drink_table[drink.name][:stock] << drink.name
+      
+    #[購入可能ドリンク]
+    #ドリンク金額
+    #投入した合計金額　且つ ドリンク情報以下のドリンクを選択して表示。keysを取り出す
+    #投入した合計金額とドリンク情報より、価格が低い（購入可能な）ドリンク情報のkeyをセレクトして表示
+    #バリューに情報を取り出す。priceキーの値（バリュー）を取り出す
 
 
     #購入する　  #投入金額は商品金額以上か？ #お釣り&在庫確認！！
